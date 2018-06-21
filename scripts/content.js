@@ -24,8 +24,26 @@ function addDownloadLink(tweet) {
     actionBar.appendChild(downloadLinkElement);
 }
 
+/**
+ *
+ */
+function handleNewTweets(mutationRecords) {
+    mutationRecords.forEach(function(mutationRecord) {
+        mutationRecord.addedNodes.forEach(function(addedTweet) {
+            addDownloadLink(addedTweet);
+        });
+    });
+}
+
 // Get the tweet container
 let tweetsContainer = document.getElementById("stream-items-id");
 
 // Add the download link to all current tweets
 Array.from(tweetsContainer.children).forEach(tweet => addDownloadLink(tweet));
+
+// Watch for further tweets being added in
+let mutationObserver = new MutationObserver(handleNewTweets);
+const mutationConfig = {
+    childList: true
+};
+mutationObserver.observe(tweetsContainer, mutationConfig);
