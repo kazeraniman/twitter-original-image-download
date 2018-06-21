@@ -1,7 +1,13 @@
-// Event pages need a listener for onClicked for the context menu item
-chrome.contextMenus.onClicked.addListener(function(info) {
-    // Extract the root image URL, stripping off a size indicator if it exists
-    let imgUrl = info.srcUrl;
+/**
+ * Download the provided image at the original size.
+ *
+ * Takes the image url provided, strips off any size specifiers that already exist.
+ * Extracts the filename from the URL then downloads the image through the Chrome API.
+ *
+ * @param {string} imgUrl    The URL of the image to download.
+ */
+function downloadImage(imgUrl) {
+    // Remove the size specifier if it exists
     if (imgUrl.endsWith(":large")) {
         imgUrl = imgUrl.slice(0, -6);
     }
@@ -20,6 +26,12 @@ chrome.contextMenus.onClicked.addListener(function(info) {
         conflictAction: "overwrite",
         saveAs: true,
     });
+}
+
+// Event pages need a listener for onClicked for the context menu item
+chrome.contextMenus.onClicked.addListener(function(info) {
+    let imgUrl = info.srcUrl;
+    downloadImage(imgUrl);
 });
 
 // Add in the context menu item
@@ -29,4 +41,9 @@ chrome.contextMenus.create({
     title: "Download original image...",
     contexts: ["image"],
     targetUrlPatterns: ["https://pbs.twimg.com/media/*"],
+});
+
+// Listen for messages from the Twitter tab
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+    downloadImage(message.imgUrl);
 });

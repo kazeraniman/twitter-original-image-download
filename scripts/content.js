@@ -14,8 +14,42 @@ function addDownloadLink(tweet) {
     }
 
     // Create the download link element
-    let downloadLinkElement = document.createElement('img');
-    downloadLinkElement.src = chrome.runtime.getURL("resources/twitter_download_icon.png");
+    // The surrounding container
+    let downloadLinkElement = document.createElement("div");
+    downloadLinkElement.className = "ProfileTweet-action ProfileTweet-action--download-original-image";
+    // The button element
+    let downloadLinkButton = document.createElement("button");
+    downloadLinkButton.className = "ProfileTweet-actionButton u-textUserColorHover js-actionButton";
+    downloadLinkButton.type = "button";
+    downloadLinkButton.addEventListener("click", function(event) {
+        chrome.runtime.sendMessage({
+            imgUrl: images[0].src
+        });
+    });
+    // The wrapper around the icon
+    let downloadLinkIconContainer = document.createElement("div");
+    downloadLinkIconContainer.className = "IconContainer js-tooltip";
+    downloadLinkIconContainer.setAttribute("data-original-title", "Download original image(s)");
+    // The actual icon
+    let downloadLinkIcon = document.createElement("img");
+    downloadLinkIcon.src = chrome.runtime.getURL("resources/twitter_download_icon.svg");
+    downloadLinkIcon.height = 16;
+    downloadLinkIcon.width = 16;
+    downloadLinkIcon.addEventListener("mouseover", function(event) {
+        event.target.src = chrome.runtime.getURL("resources/twitter_download_hovered_icon.svg");
+    });
+    downloadLinkIcon.addEventListener("mouseout", function(event) {
+        event.target.src = chrome.runtime.getURL("resources/twitter_download_icon.svg");
+    });
+    // The tooltip
+    let downloadLinkTooltip = document.createElement("span");
+    downloadLinkTooltip.className = "u-hiddenVisually";
+    downloadLinkTooltip.innerText = "Download original image(s)";
+    // Put the pieces together
+    downloadLinkIconContainer.appendChild(downloadLinkIcon);
+    downloadLinkIconContainer.appendChild(downloadLinkTooltip);
+    downloadLinkButton.appendChild(downloadLinkIconContainer);
+    downloadLinkElement.appendChild(downloadLinkButton);
 
     // Get the action bar
     let actionBar = tweet.querySelector(".ProfileTweet-actionList");
@@ -25,7 +59,12 @@ function addDownloadLink(tweet) {
 }
 
 /**
+ * Processes new tweets as they are loaded asynchronously.
  *
+ * For each mutation of the tweet container, go through all of the added nodes and process them
+ * like tweets.
+ *
+ * @param {Object} mutationRecords    A list of mutation records for tweet container.
  */
 function handleNewTweets(mutationRecords) {
     mutationRecords.forEach(function(mutationRecord) {
