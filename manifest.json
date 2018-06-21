@@ -3,16 +3,27 @@
 
     "name": "Twitter Original Image Download",
     "author": "Iman Kazerani",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "An extension which allows for easier downloading of full-images from Twitter without strange file types.",
 
     "background": {
         "persistent": false,
-        "scripts": ["background.js"]
+        "scripts": ["scripts/background.js"]
     },
+
+    "content_scripts": [
+        {
+            "matches": ["https://twitter.com/*"],
+            "js": ["scripts/content.js"]
+        }
+    ],
 
     "permissions": [
         "contextMenus",
         "downloads"
+    ],
+
+    "web_accessible_resources": [
+        "resources/twitter_download_icon.png"
     ]
 }
