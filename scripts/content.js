@@ -68,21 +68,35 @@ function addDownloadLink(tweet) {
  */
 function handleNewTweets(mutationRecords) {
     mutationRecords.forEach(function(mutationRecord) {
-        mutationRecord.addedNodes.forEach(function(addedTweet) {
-            addDownloadLink(addedTweet);
+        mutationRecord.addedNodes.forEach(function(addedNode) {
+            Array.from(addedNode.querySelectorAll(".tweet")).forEach(addedTweet => addDownloadLink(addedTweet));
         });
     });
 }
 
-// Get the tweet container
-let tweetsContainer = document.getElementById("stream-items-id");
+/**
+ * Handles everything that needs to be done on pages where the script should be injected.
+ *
+ * The script needs to be re-injected on Twitter pages when navigation goes to a different page.
+ * This is necessary due to the single-page nature of the site.  Initial processing must be redone
+ * as well as setting up mutation observers for further asynchronous loading.
+ */
+function scriptInjection() {
+    // Get the main tweet container
+    let tweetsContainer = document.querySelector("#timeline #stream-items-id");
+    // If there is a tweet container present (we are on a valid page)
+    if (tweetsContainer) {
+        // Add the download link to all current tweets
+        Array.from(tweetsContainer.querySelectorAll(".tweet")).forEach(tweet => addDownloadLink(tweet));
 
-// Add the download link to all current tweets
-Array.from(tweetsContainer.children).forEach(tweet => addDownloadLink(tweet));
+        // Watch for further tweets being added in
+        let mutationObserver = new MutationObserver(handleNewTweets);
+        const mutationConfig = {
+            childList: true
+        };
+        mutationObserver.observe(tweetsContainer, mutationConfig);
+    }
+}
 
-// Watch for further tweets being added in
-let mutationObserver = new MutationObserver(handleNewTweets);
-const mutationConfig = {
-    childList: true
-};
-mutationObserver.observe(tweetsContainer, mutationConfig);
+// On navigation to Twitter need to perform the initial script injection
+scriptInjection();
