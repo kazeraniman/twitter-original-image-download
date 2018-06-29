@@ -67,9 +67,15 @@ function addDownloadLink(tweet) {
  * @param {Object} mutationRecords    A list of mutation records for tweet container.
  */
 function handleNewTweets(mutationRecords) {
+    // Go through each mutation record
     mutationRecords.forEach(function(mutationRecord) {
+        // Go through each added node
         mutationRecord.addedNodes.forEach(function(addedNode) {
-            Array.from(addedNode.querySelectorAll(".tweet")).forEach(addedTweet => addDownloadLink(addedTweet));
+            // If the node is a nice, HTML node
+            if (addedNode.tagName) {
+                // Get all tweets under it and add in the download link for them
+                Array.from(addedNode.querySelectorAll(".tweet")).forEach(addedTweet => addDownloadLink(addedTweet));
+            }
         });
     });
 }
@@ -82,6 +88,16 @@ function handleNewTweets(mutationRecords) {
  * as well as setting up mutation observers for further asynchronous loading.
  */
 function scriptInjection() {
+    // Configure the mutation observer for new tweets
+    let mutationObserver = new MutationObserver(handleNewTweets);
+    const mainTweetsMutationConfig = {
+        childList: true
+    };
+    const modalTweetsMutationConfig = {
+        childList: true,
+        subtree: true
+    };
+
     // Get the main tweet container
     let tweetsContainer = document.querySelector("#timeline #stream-items-id");
     // If there is a tweet container present (we are on a valid page)
@@ -90,11 +106,18 @@ function scriptInjection() {
         Array.from(tweetsContainer.querySelectorAll(".tweet")).forEach(tweet => addDownloadLink(tweet));
 
         // Watch for further tweets being added in
-        let mutationObserver = new MutationObserver(handleNewTweets);
-        const mutationConfig = {
-            childList: true
-        };
-        mutationObserver.observe(tweetsContainer, mutationConfig);
+        mutationObserver.observe(tweetsContainer, mainTweetsMutationConfig);
+    }
+
+    // Get the modal container for specific tweet expansion
+    let modalContainer = document.querySelector("#permalink-overlay");
+     // If there is a tweet container present (we are on a valid page)
+    if (modalContainer) {
+        // Add the download link to all current tweets
+        Array.from(modalContainer.querySelectorAll(".tweet")).forEach(tweet => addDownloadLink(tweet));
+
+        // Watch for further tweets being added in
+        mutationObserver.observe(modalContainer, modalTweetsMutationConfig);
     }
 }
 
