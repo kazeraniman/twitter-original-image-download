@@ -1,4 +1,41 @@
 /**
+ * Initializes the base element to add for downloading without the listeners.
+ *
+ * The element created by this method is then cloned for each additional tweet to reduce the
+ * workload and be more performant when compared to create the element from scratch each time.
+ */
+function createBaseDownloadLinkElement() {
+    // Create the download link element
+    // The surrounding container
+    let downloadLinkElement = document.createElement("div");
+    downloadLinkElement.className = "ProfileTweet-action ProfileTweet-action--download-original-image";
+    // The button element
+    let downloadLinkButton = document.createElement("button");
+    downloadLinkButton.className = "ProfileTweet-actionButton u-textUserColorHover js-actionButton";
+    downloadLinkButton.type = "button";
+    // The wrapper around the icon
+    let downloadLinkIconContainer = document.createElement("div");
+    downloadLinkIconContainer.className = "IconContainer js-tooltip";
+    downloadLinkIconContainer.setAttribute("data-original-title", "Download original image(s)");
+    // The actual icon
+    let downloadLinkIcon = document.createElement("img");
+    downloadLinkIcon.src = chrome.runtime.getURL("resources/twitter_download_icon.svg");
+    downloadLinkIcon.height = 16;
+    downloadLinkIcon.width = 16;
+    // The tooltip
+    let downloadLinkTooltip = document.createElement("span");
+    downloadLinkTooltip.className = "u-hiddenVisually";
+    downloadLinkTooltip.innerText = "Download original image(s)";
+    // Put the pieces together
+    downloadLinkIconContainer.appendChild(downloadLinkIcon);
+    downloadLinkIconContainer.appendChild(downloadLinkTooltip);
+    downloadLinkButton.appendChild(downloadLinkIconContainer);
+    downloadLinkElement.appendChild(downloadLinkButton);
+    // Set the global variable to hold the base node
+    window.downloadLinkElement = downloadLinkElement;
+}
+
+/**
  * Adds an icon to enable downloading the image for tweets with images.
  *
  * Takes a tweet and determines whether or not it contains images.  If so, inject a new element
@@ -13,43 +50,23 @@ function addDownloadLink(tweet) {
         return;
     }
 
-    // Create the download link element
-    // The surrounding container
-    let downloadLinkElement = document.createElement("div");
-    downloadLinkElement.className = "ProfileTweet-action ProfileTweet-action--download-original-image";
-    // The button element
-    let downloadLinkButton = document.createElement("button");
-    downloadLinkButton.className = "ProfileTweet-actionButton u-textUserColorHover js-actionButton";
-    downloadLinkButton.type = "button";
+    // Prepare the download element by cloning the base element with all its children
+    let downloadLinkElement = window.downloadLinkElement.cloneNode(true);
+    // Set up the download link
+    let downloadLinkButton = downloadLinkElement.querySelector("button");
     downloadLinkButton.addEventListener("click", function(event) {
         chrome.runtime.sendMessage({
             imgUrl: images[0].src
         });
     });
-    // The wrapper around the icon
-    let downloadLinkIconContainer = document.createElement("div");
-    downloadLinkIconContainer.className = "IconContainer js-tooltip";
-    downloadLinkIconContainer.setAttribute("data-original-title", "Download original image(s)");
-    // The actual icon
-    let downloadLinkIcon = document.createElement("img");
-    downloadLinkIcon.src = chrome.runtime.getURL("resources/twitter_download_icon.svg");
-    downloadLinkIcon.height = 16;
-    downloadLinkIcon.width = 16;
+    // Setup the hover listeners for animation
+    let downloadLinkIcon = downloadLinkElement.querySelector("img");
     downloadLinkIcon.addEventListener("mouseover", function(event) {
         event.target.src = chrome.runtime.getURL("resources/twitter_download_hovered_icon.svg");
     });
     downloadLinkIcon.addEventListener("mouseout", function(event) {
         event.target.src = chrome.runtime.getURL("resources/twitter_download_icon.svg");
     });
-    // The tooltip
-    let downloadLinkTooltip = document.createElement("span");
-    downloadLinkTooltip.className = "u-hiddenVisually";
-    downloadLinkTooltip.innerText = "Download original image(s)";
-    // Put the pieces together
-    downloadLinkIconContainer.appendChild(downloadLinkIcon);
-    downloadLinkIconContainer.appendChild(downloadLinkTooltip);
-    downloadLinkButton.appendChild(downloadLinkIconContainer);
-    downloadLinkElement.appendChild(downloadLinkButton);
 
     // Get the action bar
     let actionBar = tweet.querySelector(".ProfileTweet-actionList");
@@ -111,7 +128,7 @@ function scriptInjection() {
 
     // Get the modal container for specific tweet expansion
     let modalContainer = document.querySelector("#permalink-overlay");
-     // If there is a tweet container present (we are on a valid page)
+     // If there is a modal container present (we are on a valid page)
     if (modalContainer) {
         // Add the download link to all current tweets
         Array.from(modalContainer.querySelectorAll(".tweet")).forEach(tweet => addDownloadLink(tweet));
@@ -121,5 +138,8 @@ function scriptInjection() {
     }
 }
 
+// Prepare the download node so it can be cloned for further use
+window.downloadLinkElement = null;
+createBaseDownloadLinkElement();
 // On navigation to Twitter need to perform the initial script injection
 scriptInjection();
