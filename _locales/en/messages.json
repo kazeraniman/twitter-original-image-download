@@ -1,0 +1,14 @@
+{
+    "extName": {
+        "message": "Twitter Original Image Download",
+        "description": "The name of the extension."
+    },
+    "extDescription": {
+        "message": "An extension which allows for easier downloading of full-images from Twitter without strange file types.",
+        "description": "The description of the extension."
+    },
+    "downloadIconTooltip": {
+        "message": "Download original image(s)",
+        "description": "The text which is displayed when hovering over the download icon."
+    }
+}

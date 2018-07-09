@@ -14,9 +14,10 @@ function createBaseDownloadLinkElement() {
     downloadLinkButton.className = "ProfileTweet-actionButton u-textUserColorHover js-actionButton";
     downloadLinkButton.type = "button";
     // The wrapper around the icon
+    const tooltipMessage = chrome.i18n.getMessage("downloadIconTooltip");
     let downloadLinkIconContainer = document.createElement("div");
     downloadLinkIconContainer.className = "IconContainer js-tooltip";
-    downloadLinkIconContainer.setAttribute("data-original-title", "Download original image(s)");
+    downloadLinkIconContainer.setAttribute("data-original-title", tooltipMessage);
     // The actual icon
     let downloadLinkIcon = document.createElement("img");
     downloadLinkIcon.src = chrome.runtime.getURL("resources/twitter_download_icon.svg");
@@ -25,7 +26,7 @@ function createBaseDownloadLinkElement() {
     // The tooltip
     let downloadLinkTooltip = document.createElement("span");
     downloadLinkTooltip.className = "u-hiddenVisually";
-    downloadLinkTooltip.innerText = "Download original image(s)";
+    downloadLinkTooltip.innerText = tooltipMessage;
     // Put the pieces together
     downloadLinkIconContainer.appendChild(downloadLinkIcon);
     downloadLinkIconContainer.appendChild(downloadLinkTooltip);
