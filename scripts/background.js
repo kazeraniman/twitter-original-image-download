@@ -30,17 +30,20 @@ function downloadImage(imgUrl) {
 
 // Event pages need a listener for onClicked for the context menu item
 chrome.contextMenus.onClicked.addListener(function(info) {
-    let imgUrl = info.srcUrl;
-    downloadImage(imgUrl);
+    downloadImage(info.srcUrl);
 });
 
 // Add in the context menu item
-chrome.contextMenus.create({
-    type: "normal",
-    id: "twitterOriginalImageDownload",
-    title: "Download original image...",
-    contexts: ["image"],
-    targetUrlPatterns: ["https://pbs.twimg.com/media/*"],
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.removeAll(() => {
+        chrome.contextMenus.create({
+            type: "normal",
+            id: "twitterOriginalImageDownload",
+            title: "Download original image...",
+            contexts: ["image"],
+            targetUrlPatterns: ["https://pbs.twimg.com/media/*"],
+        });
+    });
 });
 
 // Listen for messages from the Twitter tab
